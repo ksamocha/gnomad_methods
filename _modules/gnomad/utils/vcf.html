@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>gnomad.utils.vcf &mdash; gnomad master documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> gnomad
+          
+
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference/index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gnomad</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>gnomad.utils.vcf</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for gnomad.utils.vcf</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">hail</span> <span class="k">as</span> <span class="nn">hl</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(levelname)s</span><span class="s2"> (</span><span class="si">%(name)s</span><span class="s2"> </span><span class="si">%(lineno)s</span><span class="s2">): </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<span class="n">INFO_VCF_AS_PIPE_DELIMITED_FIELDS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;AS_QUALapprox&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AS_VarDP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AS_MQ_DP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AS_RAW_MQ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AS_SB_TABLE&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="ht_to_vcf_mt"><a class="viewcode-back" href="../../../api_reference/utils/vcf.html#gnomad.utils.vcf.ht_to_vcf_mt">[docs]</a><span class="k">def</span> <span class="nf">ht_to_vcf_mt</span><span class="p">(</span>
+    <span class="n">info_ht</span><span class="p">:</span> <span class="n">hl</span><span class="o">.</span><span class="n">Table</span><span class="p">,</span>
+    <span class="n">pipe_delimited_annotations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">INFO_VCF_AS_PIPE_DELIMITED_FIELDS</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">hl</span><span class="o">.</span><span class="n">MatrixTable</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a MT ready for vcf export from a HT. In particular, the following conversions are done:</span>
+<span class="sd">    - All int64 are coerced to int32</span>
+<span class="sd">    - Fields specified by `pipe_delimited_annotations` will be converted from arrays to pipe-delimited strings</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        The MT returned has no cols.</span>
+
+<span class="sd">    :param info_ht: Input HT</span>
+<span class="sd">    :param pipe_delimited_annotations: List of info fields (they must be fields of the ht.info Struct)</span>
+<span class="sd">    :return: MatrixTable ready for VCF export</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">get_pipe_expr</span><span class="p">(</span><span class="n">array_expr</span><span class="p">:</span> <span class="n">hl</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">ArrayExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">hl</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">StringExpression</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">hl</span><span class="o">.</span><span class="n">delimit</span><span class="p">(</span><span class="n">array_expr</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">hl</span><span class="o">.</span><span class="n">or_else</span><span class="p">(</span><span class="n">hl</span><span class="o">.</span><span class="n">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="s2">&quot;&quot;</span><span class="p">)),</span> <span class="s2">&quot;|&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Make sure the HT is keyed by locus, alleles</span>
+    <span class="n">info_ht</span> <span class="o">=</span> <span class="n">info_ht</span><span class="o">.</span><span class="n">key_by</span><span class="p">(</span><span class="s2">&quot;locus&quot;</span><span class="p">,</span> <span class="s2">&quot;alleles&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Convert int64 fields to int32 (int64 isn&#39;t supported by VCF)</span>
+    <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">ft</span> <span class="ow">in</span> <span class="n">info_ht</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">ft</span> <span class="o">==</span> <span class="n">hl</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="s2">&quot;int64&quot;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Coercing field info.</span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2"> from int64 to int32 for VCF output. Value will be capped at int32 max value.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">info_ht</span> <span class="o">=</span> <span class="n">info_ht</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+                <span class="n">info</span><span class="o">=</span><span class="n">info_ht</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+                    <span class="o">**</span><span class="p">{</span><span class="n">f</span><span class="p">:</span> <span class="n">hl</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">hl</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="mi">31</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">info_ht</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">f</span><span class="p">]))}</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">ft</span> <span class="o">==</span> <span class="n">hl</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="s2">&quot;array&lt;int64&gt;&quot;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Coercing field info.</span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2"> from array&lt;int64&gt; to array&lt;int32&gt; for VCF output. Array values will be capped at int32 max value.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">info_ht</span> <span class="o">=</span> <span class="n">info_ht</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+                <span class="n">info</span><span class="o">=</span><span class="n">info_ht</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+                    <span class="o">**</span><span class="p">{</span>
+                        <span class="n">f</span><span class="p">:</span> <span class="n">info_ht</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+                            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">hl</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">hl</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="mi">31</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
+                        <span class="p">)</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="n">info_expr</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Make sure to pipe-delimit fields that need to.</span>
+    <span class="c1"># Note: the expr needs to be prefixed by &quot;|&quot; because GATK expect one value for the ref (always empty)</span>
+    <span class="c1"># Note2: this doesn&#39;t produce the correct annotation for AS_SB_TABLE, but it is overwritten below</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">pipe_delimited_annotations</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">info_ht</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
+            <span class="n">info_expr</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;|&quot;</span> <span class="o">+</span> <span class="n">get_pipe_expr</span><span class="p">(</span><span class="n">info_ht</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">f</span><span class="p">])</span>
+
+    <span class="c1"># Flatten SB if it is an array of arrays</span>
+    <span class="k">if</span> <span class="s2">&quot;SB&quot;</span> <span class="ow">in</span> <span class="n">info_ht</span><span class="o">.</span><span class="n">info</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">info_ht</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">SB</span><span class="p">,</span> <span class="n">hl</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">ArrayNumericExpression</span>
+    <span class="p">):</span>
+        <span class="n">info_expr</span><span class="p">[</span><span class="s2">&quot;SB&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">info_ht</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">SB</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">info_ht</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">SB</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="s2">&quot;AS_SB_TABLE&quot;</span> <span class="ow">in</span> <span class="n">info_ht</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
+        <span class="n">info_expr</span><span class="p">[</span><span class="s2">&quot;AS_SB_TABLE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_pipe_expr</span><span class="p">(</span>
+            <span class="n">info_ht</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">AS_SB_TABLE</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">hl</span><span class="o">.</span><span class="n">delimit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">))</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Annotate with new expression and add &#39;s&#39; empty string field required to cast HT to MT</span>
+    <span class="n">info_ht</span> <span class="o">=</span> <span class="n">info_ht</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+        <span class="n">info</span><span class="o">=</span><span class="n">info_ht</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="o">**</span><span class="n">info_expr</span><span class="p">),</span> <span class="n">s</span><span class="o">=</span><span class="n">hl</span><span class="o">.</span><span class="n">null</span><span class="p">(</span><span class="n">hl</span><span class="o">.</span><span class="n">tstr</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Create an MT with no cols so that we acn export to VCF</span>
+    <span class="n">info_mt</span> <span class="o">=</span> <span class="n">info_ht</span><span class="o">.</span><span class="n">to_matrix_table_row_major</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;s&quot;</span><span class="p">],</span> <span class="n">entry_field_name</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">info_mt</span><span class="o">.</span><span class="n">filter_cols</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
